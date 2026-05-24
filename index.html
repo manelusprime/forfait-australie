@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistant Mobilité - iPhone 12</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel pour compiler le JSX dans le navigateur -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuration Tailwind pour les couleurs personnalisées -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans antialiased">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // --- COMPOSANTS D'ICÔNES ---
+        const IconWifi = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>;
+        const IconData = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>;
+        const IconVoice = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
+        const IconCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
+        const IconAlert = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
+        const IconSettings = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
+        const IconBook = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>;
+        const IconInfo = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>;
+        const IconShield = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
+
+        // --- VUES PRINCIPALES ---
+
+        const ViewBases = () => (
+            <div className="space-y-6 animate-fade-in pb-8">
+                <div className="bg-white p-6 rounded-2xl shadow-sm">
+                    <h2 className="text-xl font-bold mb-4 text-brand-900">Le dico des réseaux (Important !)</h2>
+                    <p className="text-gray-600 mb-6 text-sm">Sur un smartphone, les SMS et Internet ne voyagent pas par les mêmes tuyaux. C'est la clé pour comprendre ton forfait.</p>
+                    
+                    <div className="space-y-5">
+                        <div className="flex items-start gap-4">
+                            <div className="bg-brand-500 text-white p-2 rounded-lg mt-1 shrink-0"><IconWifi /></div>
+                            <div>
+                                <h3 className="font-bold text-brand-900 text-lg">1. Le Wi-Fi (La Box)</h3>
+                                <p className="text-sm text-gray-700 leading-relaxed">C'est la connexion de la maison, de l'université ou du café. C'est <strong>illimité et gratuit</strong>. <br/><span className="bg-yellow-100 px-1 rounded">Règle d'or :</span> Attends toujours d'être en Wi-Fi pour regarder des vidéos TikTok, Insta ou mettre à jour tes applis.</p>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-start gap-4">
+                            <div className="bg-orange-500 text-white p-2 rounded-lg mt-1 shrink-0"><IconData /></div>
+                            <div>
+                                <h3 className="font-bold text-orange-900 text-lg">2. Les Données Cellulaires (La "Data")</h3>
+                                <p className="text-sm text-gray-700 leading-relaxed">C'est l'Internet qui passe par les antennes dans la rue (4G/5G). C'est le carburant de ton forfait (les fameux 35 Go chez Free). <strong>C'est payant et limité</strong>. Ça sert pour Google Maps, WhatsApp ou chercher une info dehors.</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-4">
+                            <div className="bg-green-500 text-white p-2 rounded-lg mt-1 shrink-0"><IconVoice /></div>
+                            <div>
+                                <h3 className="font-bold text-green-900 text-lg">3. Le Réseau Voix/SMS (Le Téléphone)</h3>
+                                <p className="text-sm text-gray-700 leading-relaxed">C'est le signal de base (les barres en haut de l'écran). Il gère les appels normaux et les "vrais" SMS (bulles vertes, SMS de la banque). <br/><span className="bg-green-100 text-green-800 font-bold px-1 rounded">Ceci ne consomme AUCUNE data.</span> Couper les données cellulaires ne t'empêche absolument pas de recevoir un SMS de ta banque.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl shadow-sm">
+                    <h2 className="text-xl font-bold mb-4 text-brand-900">Le vrai "Data-o-Mètre"</h2>
+                    <p className="text-gray-600 mb-4 text-sm">35 Go de "Données Cellulaires", ça s'épuise vite ? Voici ce que tu peux faire avec 1 Go (Il t'en reste 34 !)</p>
+                    
+                    <div className="space-y-4">
+                        <div className="p-3 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
+                            <h4 className="font-bold text-red-800 flex justify-between"><span>🔴 Le grand danger : La Vidéo</span></h4>
+                            <p className="text-xs text-red-700 mt-1"><strong>TikTok / Reels Insta / YouTube HD :</strong> Environ 1 à 2 Go par HEURE ! Si tu passes ton après-midi sur TikTok sans Wi-Fi, tu grilles la moitié de ton forfait mensuel en un jour.</p>
+                        </div>
+
+                        <div className="p-3 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
+                            <h4 className="font-bold text-blue-800 flex justify-between"><span>🔵 L'usage normal : Audio & Navigation</span></h4>
+                            <p className="text-xs text-blue-700 mt-1"><strong>Spotify / Podcasts / Google Maps :</strong> Environ 100 Mo par heure. Avec tes 35 Go, tu as plus de 300 heures de musique devant toi. C'est très sûr.</p>
+                        </div>
+
+                        <div className="p-3 bg-purple-50 border-l-4 border-purple-500 rounded-r-lg">
+                            <h4 className="font-bold text-purple-800 flex justify-between"><span>🟣 Le piège caché : Photos & Vidéos (WhatsApp/Insta)</span></h4>
+                            <p className="text-xs text-purple-700 mt-1"><strong>Envoi de médias :</strong> 1 photo = ~3 Mo. 1 minute de vidéo = ~50 Mo. Envoyer des dizaines de photos à la famille, c'est OK. Mais envoyer de longues vidéos 4K de tes excursions va vider ton réservoir à vitesse grand V. Préfère toujours le Wi-Fi pour uploader des vidéos.</p>
+                        </div>
+
+                        <div className="p-3 bg-green-50 border-l-4 border-green-500 rounded-r-lg">
+                            <h4 className="font-bold text-green-800 flex justify-between"><span>🟢 Consommation invisible : Le Texte</span></h4>
+                            <p className="text-xs text-green-700 mt-1"><strong>Messages WhatsApp / Mails sans pièce jointe :</strong> Quelques Kilo-octets. Tu peux envoyer des millions de messages texte, ça ne videra jamais tes 35 Go.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const ViewCockpit = () => {
+            const [isFreeActive, setIsFreeActive] = useState(true);
+            const [dataChoice, setDataChoice] = useState('australie'); // 'australie' ou 'free'
+            const [roamingActive, setRoamingActive] = useState(false);
+
+            return (
+                <div className="space-y-6 animate-fade-in pb-8">
+                    <div className="bg-brand-900 text-white p-6 rounded-2xl shadow-sm">
+                        <h2 className="text-2xl font-bold mb-2 text-center">Cockpit iPhone 12</h2>
+                        <p className="text-sm opacity-90 text-center">Pour jongler sans erreur, ton iPhone doit être configuré exactement comme ci-dessous.</p>
+                    </div>
+
+                    {/* ÉTAPE 1 : ACTIVATION LIGNE */}
+                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="bg-gray-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                            <h3 className="font-bold text-lg text-gray-800">Garder le numéro actif</h3>
+                        </div>
+                        <p className="text-xs text-gray-500 mb-4">Réglages > Données cellulaires > Forfait Free</p>
+                        
+                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl mb-3">
+                            <div>
+                                <p className="font-bold text-gray-800">Activer ce numéro</p>
+                                <p className="text-xs text-gray-500 mt-1">Nécessaire pour recevoir les SMS.</p>
+                            </div>
+                            <button 
+                                onClick={() => setIsFreeActive(!isFreeActive)}
+                                className={`w-14 h-8 flex items-center rounded-full p-1 transition-colors duration-300 shrink-0 ${isFreeActive ? 'bg-green-500' : 'bg-gray-300'}`}
+                            >
+                                <div className={`bg-white w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 ${isFreeActive ? 'translate-x-6' : ''}`}></div>
+                            </button>
+                        </div>
+                        <p className={`text-xs p-2 rounded flex gap-2 ${isFreeActive ? 'bg-green-50 text-green-800' : 'bg-orange-50 text-orange-800'}`}>
+                            <IconInfo />
+                            {isFreeActive 
+                                ? "C'est allumé ! Ton iPhone capte le réseau pour recevoir tes SMS bancaires. Ça ne consomme pas d'Internet."
+                                : "Ta ligne Free est totalement éteinte. Tu ne recevras aucun appel ni SMS de France."}
+                        </p>
+                    </div>
+
+                    {/* ÉTAPE 2 : CHOIX DE LA DATA */}
+                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="bg-gray-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold">2</span>
+                            <h3 className="font-bold text-lg text-gray-800">Qui fournit l'Internet ?</h3>
+                        </div>
+                        <p className="text-xs text-gray-500 mb-4">Réglages > Données cellulaires > Données cellulaires</p>
+                        
+                        <div className="flex flex-col gap-2 bg-gray-50 p-4 rounded-xl">
+                            <label className="flex items-center gap-3 p-2 border rounded-lg cursor-pointer bg-white">
+                                <input type="radio" name="data" checked={dataChoice === 'australie'} onChange={() => setDataChoice('australie')} className="w-5 h-5 text-brand-600 focus:ring-brand-500"/>
+                                <span className="font-bold">Forfait Australien</span>
+                            </label>
+                            <label className="flex items-center gap-3 p-2 border rounded-lg cursor-pointer bg-white">
+                                <input type="radio" name="data" checked={dataChoice === 'free'} onChange={() => setDataChoice('free')} className="w-5 h-5 text-brand-600 focus:ring-brand-500"/>
+                                <span>Forfait Free France</span>
+                            </label>
+                        </div>
+                        <p className={`text-xs mt-3 p-2 rounded flex gap-2 ${dataChoice === 'australie' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                            <IconInfo />
+                            {dataChoice === 'australie' 
+                                ? "Excellent. Ton iPhone utilise uniquement ton forfait local australien pour naviguer."
+                                : "ATTENTION : Tu utilises l'Internet de Free. Tu puises dans tes 35 Go !"}
+                        </p>
+                    </div>
+
+                    {/* ÉTAPE 3 : ITINÉRANCE (ROAMING) */}
+                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold">3</span>
+                            <h3 className="font-bold text-lg text-gray-800">Le verrou de sécurité</h3>
+                        </div>
+                        
+                        <div className="bg-blue-50 p-3 rounded-lg mb-4 text-sm text-blue-900 border border-blue-100">
+                            <strong>Qu'est-ce que l'itinérance (Roaming) ?</strong><br/>
+                            C'est quand ta puce Free emprunte les antennes australiennes pour avoir Internet. Free t'offre 35 Go d'itinérance. Mais pour éviter que ton iPhone ne les grignote sans que tu le saches, <strong>le mieux est de la bloquer par défaut.</strong>
+                        </div>
+
+                        <p className="text-xs text-gray-500 mb-2">Réglages > Données cell. > Forfait Free</p>
+                        
+                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl mb-3">
+                            <div>
+                                <p className="font-bold text-gray-800">Données à l'étranger</p>
+                                <p className="text-xs text-gray-500">L'autorisation de faire du Roaming</p>
+                            </div>
+                            <button 
+                                onClick={() => setRoamingActive(!roamingActive)}
+                                className={`w-14 h-8 flex items-center rounded-full p-1 transition-colors duration-300 shrink-0 ${roamingActive ? 'bg-red-500' : 'bg-gray-300'}`}
+                            >
+                                <div className={`bg-white w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 ${roamingActive ? 'translate-x-6' : ''}`}></div>
+                            </button>
+                        </div>
+                        <div className={`text-xs p-2 rounded flex gap-2 ${roamingActive ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'}`}>
+                            <IconInfo />
+                            {roamingActive 
+                                ? "La vanne est ouverte ! Free peut se connecter à Internet en Australie. À couper si tu utilises ton forfait Australien."
+                                : "Vanne fermée. Sécurité absolue. Même en cas d'erreur de bouton, Free ne pourra pas utiliser la Data en Australie."}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ViewSurvie = () => (
+            <div className="space-y-6 animate-fade-in pb-8">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-brand-500">
+                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><IconSettings /> Réglages secrets (iPhone)</h2>
+                    
+                    <div className="space-y-5">
+                        <div className="border-b border-gray-100 pb-4">
+                            <h3 className="font-bold text-brand-800 mb-1">Empêcher le "Basculement"</h3>
+                            <p className="text-sm text-gray-600 mb-2 leading-relaxed">Si ton réseau Australien capte mal, l'iPhone est "trop intelligent" : il va discrètement basculer sur la puce Free pour chercher Internet. Il faut lui interdire.</p>
+                            <div className="bg-gray-50 p-3 rounded-lg text-xs font-mono text-gray-700 border border-gray-200">
+                                Réglages > Données cellulaires > Données cellulaires<br/>
+                                🔴 <strong>Désactive</strong> "Autoriser le basculement".
+                            </div>
+                        </div>
+
+                        <div className="border-b border-gray-100 pb-4">
+                            <h3 className="font-bold text-brand-800 mb-1">Gérer les applis "Vampires"</h3>
+                            <p className="text-sm text-gray-600 mb-2 leading-relaxed">Même sans les ouvrir, certaines applications téléchargent des données en arrière-plan. Bloque-les pour qu'elles ne s'actualisent qu'en Wi-Fi, et coupe carrément celles dont tu n'as pas besoin en temps réel.</p>
+                            <div className="bg-gray-50 p-3 rounded-lg text-xs font-mono text-gray-700 border border-gray-200">
+                                Réglages > Général > Actualiser en arrière-plan<br/>
+                                🔵 En haut, choisis <strong>"Wi-Fi"</strong> (au lieu de Wi-Fi et Données cell.).<br/>
+                                🔵 Dans la liste en dessous : <strong>Désactive</strong> l'interrupteur des applis très gourmandes (Instagram, TikTok) pour qu'elles ne fassent rien dans ton dos.
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 className="font-bold text-brand-800 mb-1">Nommer tes cartes SIM</h3>
+                            <p className="text-sm text-gray-600 mb-2 leading-relaxed">Par défaut, l'iPhone les appelle "Principal" et "Secondaire", c'est confus. Renomme-les !</p>
+                            <div className="bg-gray-50 p-3 rounded-lg text-xs font-mono text-gray-700 border border-gray-200">
+                                Réglages > Données cellulaires > [Choisis ta ligne] > Étiquette du forfait<br/>
+                                👉 Tape "FRANCE" pour Free, et "AUSTRALIE" pour l'autre.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const ViewUrgence = () => (
+            <div className="space-y-6 animate-fade-in pb-8">
+                <div className="bg-red-50 p-6 rounded-2xl shadow-sm border border-red-200">
+                    <h2 className="text-xl font-bold mb-4 text-red-900 flex items-center gap-2"><IconAlert /> Mode Panique : Que faire ?</h2>
+                    <p className="text-sm text-red-800 mb-4 font-medium">Tu as reçu un SMS de Free disant que tu as consommé tes 35 Go ou fait du hors-forfait ? Pas de panique. Applique ceci :</p>
+                    
+                    <ol className="list-decimal pl-5 space-y-3 text-sm text-red-900 font-bold">
+                        <li>Va dans Réglages > Données cellulaires.</li>
+                        <li>Va sur le forfait FREE.</li>
+                        <li>Vérifie que <span className="underline">"Données à l'étranger"</span> est bien <span className="bg-red-200 px-1 rounded">DÉSACTIVÉ (gris)</span>.</li>
+                        <li className="text-green-700 mt-4">C'est tout. Laisse la ligne allumée. Tu recevras tes SMS bancaires, mais tu as bloqué le "tuyau" Internet de Free. Le saignement est stoppé.</li>
+                    </ol>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-blue-500">
+                    <h2 className="text-xl font-bold mb-4 text-blue-900 flex items-center gap-2"><IconShield /> Attention au "Retoquage"</h2>
+                    <p className="text-sm text-gray-700 mb-4 leading-relaxed">
+                        Le forfait Free 5G est un forfait <em>Français</em>. L'itinérance en Australie (les 35 Go) est faite pour les voyages. Si Free voit que tu n'utilises <strong>jamais</strong> ton téléphone en France pendant plusieurs mois, leurs algorithmes peuvent te considérer comme une "fraude". Les conséquences ? <strong>Le blocage total de tes données à l'étranger, ou pire, un passage en "hors-forfait" extrêmement coûteux</strong> (facturé au Mégaoctet, ce qui peut générer des factures de plusieurs centaines d'euros).
+                    </p>
+                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <h3 className="font-bold text-blue-900 mb-2 text-sm">La solution stratégique :</h3>
+                        <p className="text-sm text-blue-800 leading-relaxed">
+                            Si tu reviens en France pour les vacances, <strong>utilise ce forfait à fond</strong>. Connecte-toi à la 5G, regarde des vidéos, passe des appels normaux en France. Cela montrera à l'ordinateur de Free que tu es bien une résidente française de retour au pays, ce qui réinitialisera ta "confiance" chez eux.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+
+        // --- COMPOSANT PRINCIPAL (APP) ---
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('bases');
+
+            const tabs = [
+                { id: 'bases', label: 'Bases', icon: <IconBook /> },
+                { id: 'cockpit', label: 'Cockpit', icon: <IconSettings /> },
+                { id: 'survie', label: 'Survie', icon: <IconCheck /> },
+                { id: 'urgence', label: 'Urgence', icon: <IconAlert /> },
+            ];
+
+            return (
+                <div className="max-w-md mx-auto min-h-screen bg-gray-100 flex flex-col shadow-xl overflow-hidden relative">
+                    
+                    {/* Header */}
+                    <header className="bg-white p-6 shadow-sm z-10 rounded-b-3xl">
+                        <h1 className="text-2xl font-black text-brand-900 tracking-tight">Mobilité<span className="text-brand-500">Pro</span></h1>
+                        <p className="text-sm text-gray-500 font-medium">Guide Double SIM iPhone 12</p>
+                    </header>
+
+                    {/* Contenu principal */}
+                    <main className="flex-1 p-4 overflow-y-auto mb-20">
+                        {activeTab === 'bases' && <ViewBases />}
+                        {activeTab === 'cockpit' && <ViewCockpit />}
+                        {activeTab === 'survie' && <ViewSurvie />}
+                        {activeTab === 'urgence' && <ViewUrgence />}
+                    </main>
+
+                    {/* Navigation Bar (Bottom) */}
+                    <nav className="bg-white border-t border-gray-200 fixed bottom-0 w-full max-w-md pb-safe z-50">
+                        <div className="flex justify-around p-2">
+                            {tabs.map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`flex flex-col items-center p-2 rounded-xl w-1/4 transition-colors ${activeTab === tab.id ? 'text-brand-600' : 'text-gray-400 hover:bg-gray-50'}`}
+                                >
+                                    <div className={`mb-1 transition-transform ${activeTab === tab.id ? 'transform scale-110' : ''}`}>
+                                        {tab.icon}
+                                    </div>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider">{tab.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </nav>
+
+                    {/* Global CSS fixes for animations */}
+                    <style>
+                        {`
+                            .animate-fade-in {
+                                animation: fadeIn 0.3s ease-out forwards;
+                            }
+                            @keyframes fadeIn {
+                                from { opacity: 0; transform: translateY(10px); }
+                                to { opacity: 1; transform: translateY(0); }
+                            }
+                            .pb-safe {
+                                padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+                            }
+                        `}
+                    </style>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
